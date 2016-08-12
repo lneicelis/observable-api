@@ -1,0 +1,26 @@
+{
+  "name": "observable-api",
+  "version": "0.1.0",
+  "description": "API client based on Observables",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luknei/observable-api.git"
+  },
+  "keywords": [
+    "RxJS",
+    "observable",
+    "API",
+    "http",
+    "client"
+  ],
+  "author": "Lukas Neicelis",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/luknei/observable-api/issues"
+  },
+  "homepage": "https://github.com/luknei/observable-api#readme"
+}
