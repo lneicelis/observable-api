@@ -4,7 +4,8 @@
   "description": "API client based on Observables",
   "main": "lib/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha --compilers js:babel-core/register",
+    "dev": "mocha --compilers js:babel-core/register --watch"
   },
   "repository": {
     "type": "git",
@@ -22,5 +23,17 @@
   "bugs": {
     "url": "https://github.com/luknei/observable-api/issues"
   },
-  "homepage": "https://github.com/luknei/observable-api#readme"
+  "homepage": "https://github.com/luknei/observable-api#readme",
+  "peerDependencies": {
+    "rx": "^4.0.0"
+  },
+  "devDependencies": {
+    "assert": "^1.4.1",
+    "babel-core": "^6.13.2",
+    "babel-preset-es2015": "^6.13.2",
+    "bluebird": "^3.4.1",
+    "mocha": "^3.0.2",
+    "rx": "^4.0.0",
+    "sinon": "^1.17.5"
+  }
 }
