@@ -15,7 +15,7 @@ API client based on Observables (RxJS)
 Using cdn:
 
 ```html
-<script src="https://npmcdn.com/observable-api/lib/dist/lib.js"></script>
+<script src="https://npmcdn.com/observable-api/lib/dist/observable-api.js"></script>
 ```
 
 Using npm:

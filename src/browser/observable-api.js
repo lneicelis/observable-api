@@ -7,5 +7,6 @@ if (typeof window !== 'undefined') {
     throw new Error('Rx library must be included before ObservableAPI!')
   }
 
-  window.ObservableAPI = observableAPIFactory(window.Rx);
+  window.ObservableAPI = window.ObservableAPI || {};
+  window.ObservableAPI.create =  observableAPIFactory(window.Rx);
 }

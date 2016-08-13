@@ -4,9 +4,9 @@
   "description": "API client based on Observables",
   "main": "lib/index.js",
   "scripts": {
-    "test": "mocha --compilers js:babel-core/register",
+    "test": "mocha --compilers js:babel-core/register test/**/*.spec.js",
     "build": "babel src --out-dir lib && webpack",
-    "dev": "mocha --compilers js:babel-core/register --watch",
+    "dev": "mocha --compilers js:babel-core/register --watch test/**/*.spec.js",
     "preversion": "npm run build && npm test",
     "postversion": "git push && git push --tags"
   },

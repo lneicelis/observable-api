@@ -3,6 +3,7 @@
 import {Observable} from 'rx';
 import assert from 'assert';
 import sinon from 'sinon';
+import {createObserver, assertCalledWith} from './utils';
 import apiFactory from '../src/index';
 import {lazyObservableFactory, error$Factory} from '../src/observable-api';
 
@@ -281,19 +282,3 @@ describe('apiFactory', () => {
     });
   });
 });
-
-function createObserver() {
-  return {
-    onNext: sinon.spy(),
-    onError: sinon.spy(),
-    onCompleted: sinon.spy()
-  };
-}
-
-function assertCalledWith(spy, expectedArgs, callIndex = 0) {
-  assert.deepEqual(
-    spy.getCall(callIndex).args,
-    expectedArgs,
-    'Observer first call was with wrong params!'
-  );
-}
