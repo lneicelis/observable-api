@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "mocha --compilers js:babel-core/register",
-    "build": "babel src --out-dir lib && webpack -d lib/browser/observable-api.js lib/dist/api.js",
+    "build": "babel src --out-dir lib && webpack",
     "dev": "mocha --compilers js:babel-core/register --watch",
     "preversion": "npm run build && npm test",
     "postversion": "git push && git push --tags"
@@ -38,6 +38,7 @@
     "mocha": "^3.0.2",
     "rx": "^4.0.0",
     "sinon": "^1.17.5",
-    "webpack": "^1.13.1"
+    "webpack": "^1.13.1",
+    "webpack-node-externals": "^1.3.3"
   }
 }
