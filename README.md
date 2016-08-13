@@ -122,4 +122,4 @@ postsWithUsers$.subscribe(posts => {
 });
 
 ```
-## [API reference](https://github.com/luknei/observable-api/typescript/observable-api.d.ts)
+## [API reference](https://github.com/luknei/observable-api/blob/master/typescript/observable-api.d.ts)
