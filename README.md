@@ -80,3 +80,7 @@ usersEndpoint.fetch();
 usersEndpoint.fetch(params, data); // returns usersEndpoint instance
 
 ```
+## Benefits
+
+## [API reference](https://github.com/luknei/observable-api/typescript/observable-api.d.ts)
+
