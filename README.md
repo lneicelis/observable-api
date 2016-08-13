@@ -29,3 +29,36 @@ Using bower:
 ```bash
 $ bower install observable-api
 ```
+
+## Example
+
+Creating api
+
+```js
+
+import {createAPI, jQueryAdapter} from 'observable-api';
+
+const adapter = jQueryAdapter(jQuery);
+const API = createAPI(adapter);
+
+const usersEndpoint = API.createEndpoint('/users', 'GET');
+
+const users$ = usersEndpoint.response$.map(res => res.data);
+
+// Request to the endpoint is made on the first subscription
+users$.subscribe(users => {
+  console.log(users);
+});
+
+// Subsequent subscriptions will use data from the latest request
+users$.subscribe(users => {
+  console.log(users);
+});
+
+// To force new request to the endpoint
+usersEndpoint.fetch();
+
+// Fetch can receive optional parameters and data
+usersEndpoint.fetch(params, data); // returns usersEndpoint instance
+
+```
