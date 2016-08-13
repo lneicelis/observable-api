@@ -9,7 +9,8 @@ if (typeof define === 'function' && define.amd) {
       ObservableAPI: observableAPIFactory(Rx)
     };
   });
-} else if (typeof window !== 'undefined') {
+}
+if (typeof window !== 'undefined') {
   if (!window.Rx) {
     throw new Error('Rx library must be included before ObservableAPI!')
   }
