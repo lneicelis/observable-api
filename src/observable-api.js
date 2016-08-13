@@ -1,12 +1,44 @@
-import {Observable, Subject, BehaviorSubject} from 'rx';
+export default function factory(Rx) {
+  const {Observable, Subject, BehaviorSubject} = Rx;
 
-export default function apiFactory(client) {
-  const apiRequest$ = new Subject();
+  return function (client) {
+    const request$ = new Subject();
+    const createEndpoint = endpointFactory(Observable, BehaviorSubject, request$, client);
 
-  function createEndpoint(uri, method, defaultParams, defaultData) {
+    return {
+      request$,
+      createEndpoint
+    };
+  };
+}
+
+export function lazyObservableFactory(Observable, subject, fetch) {
+  return Observable.create(observer => {
+    subject.onNext(subject.value || fetch());
+    observer.onCompleted();
+  });
+}
+
+export function response$Factory(Observable, request$) {
+  return request$
+    .flatMapLatest(req => {
+      return req.response.catch(() => Observable.never())
+    });
+}
+
+export function error$Factory(Observable, request$) {
+  return request$
+    .flatMapLatest(req => {
+      return req.response.skipWhile(() => false).catch(err => Observable.of(err));
+    });
+}
+
+function endpointFactory(Observable, BehaviorSubject, apiRequest$, client) {
+  return function createEndpoint(uri, method, defaultParams, defaultData) {
     const subject = new BehaviorSubject();
-    
+
     const lazyObservable = lazyObservableFactory(
+      Observable,
       subject,
       () => fetch(defaultParams, defaultData)
     );
@@ -38,35 +70,9 @@ export default function apiFactory(client) {
         return this;
       },
       request$: request$,
-      response$: response$Factory(request$),
-      error$: error$Factory(request$)
+      response$: response$Factory(Observable, request$),
+      error$: error$Factory(Observable, request$)
 
     }
   }
-
-  return {
-    request$: apiRequest$,
-    createEndpoint
-  };
-}
-
-export function lazyObservableFactory(subject, fetch) {
-  return Observable.create(observer => {
-    subject.onNext(subject.value || fetch());
-    observer.onCompleted();
-  });
-}
-
-export function response$Factory(request$) {
-  return request$
-    .flatMapLatest(req => {
-      return req.response.catch(() => Observable.never())
-    });
-}
-
-export function error$Factory(request$) {
-  return request$
-    .flatMapLatest(req => {
-      return req.response.skipWhile(() => false).catch(err => Observable.of(err));
-    });
 }

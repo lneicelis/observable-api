@@ -3,35 +3,14 @@
 import {Observable} from 'rx';
 import assert from 'assert';
 import sinon from 'sinon';
-import apiFactory, {lazyObservableFactory, error$Factory} from '../src/observable-api';
+import apiFactory from '../src/index';
+import {lazyObservableFactory, error$Factory} from '../src/observable-api';
 
 describe('apiFactory', () => {
   let observer;
 
   beforeEach(() => {
     observer = createObserver();
-  });
-
-  it('should have createEndpoint method', () => {
-    const api = apiFactory(() => {
-    });
-
-    assert.equal(
-      typeof api.createEndpoint,
-      'function',
-      'api does not have createEndpoint function'
-    );
-  });
-
-  it('should have request$property which is Observable', () => {
-    const api = apiFactory(() => {
-    });
-
-    assert.equal(
-      typeof api.request$.subscribe,
-      'function',
-      'api does not have request$ observable'
-    );
   });
 
   describe('createEndpoint', () => {
@@ -43,6 +22,22 @@ describe('apiFactory', () => {
       client = sinon.stub();
       api = apiFactory(client);
       endpoint = api.createEndpoint(URI, METHOD);
+    });
+
+    it('should have createEndpoint method', () => {
+      assert.equal(
+        typeof api.createEndpoint,
+        'function',
+        'api does not have createEndpoint function'
+      );
+    });
+
+    it('should have request$property which is Observable', () => {
+      assert.equal(
+        typeof api.request$.subscribe,
+        'function',
+        'api does not have request$ observable'
+      );
     });
 
     it('should have fetch method', () => {
@@ -110,7 +105,7 @@ describe('apiFactory', () => {
       client.returns('response');
 
       endpoint.request$.subscribe(observer);
-      
+
       assert.equal(
         observer.onNext.firstCall.args[0].response,
         'response',
@@ -137,8 +132,10 @@ describe('apiFactory', () => {
     });
 
     it('should not make request after subscribers count 1 => 0 => 1', () => {
-      endpoint.request$.take(1).subscribe(() => {});
-      endpoint.request$.subscribe(() => {});
+      endpoint.request$.take(1).subscribe(() => {
+      });
+      endpoint.request$.subscribe(() => {
+      });
 
       assert.equal(client.callCount, 1);
     });
@@ -146,7 +143,8 @@ describe('apiFactory', () => {
     it('should push latest value when subscribers count 0 => 1', () => {
       client.returns('response');
 
-      endpoint.request$.take(1).subscribe(() => {});
+      endpoint.request$.take(1).subscribe(() => {
+      });
       endpoint.request$.subscribe(observer);
 
       assert.equal(
@@ -224,7 +222,7 @@ describe('apiFactory', () => {
         onNext: sinon.spy()
       };
       const fetch = sinon.stub().returns('req');
-      const observable = lazyObservableFactory(behaviorSubject, fetch);
+      const observable = lazyObservableFactory(Observable, behaviorSubject, fetch);
 
       observable.subscribe(observer);
 
@@ -240,7 +238,7 @@ describe('apiFactory', () => {
   describe('error$Factory', () => {
     it('should skip next values', () => {
       const request$ = Observable.of('request1', 'req2');
-      const error$ = error$Factory(request$);
+      const error$ = error$Factory(Observable, request$);
 
       error$.subscribe(observer);
 
@@ -251,7 +249,7 @@ describe('apiFactory', () => {
       const request$ = Observable.of(
         {response: Observable.throw('error')}
       );
-      const error$ = error$Factory(request$);
+      const error$ = error$Factory(Observable, request$);
 
       error$.subscribe(observer);
 
@@ -268,7 +266,7 @@ describe('apiFactory', () => {
         {response: Observable.throw('error1')},
         {response: Observable.throw('error2')}
       );
-      const error$ = error$Factory(request$);
+      const error$ = error$Factory(Observable, request$);
 
       error$.subscribe(observer);
 
