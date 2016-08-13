@@ -3,8 +3,7 @@
 import {Observable} from 'rx';
 import assert from 'assert';
 import sinon from 'sinon';
-import apiFactory, {lazyObservableFactory, error$Factory} from '../src/index';
-
+import apiFactory, {lazyObservableFactory, error$Factory} from '../src/observable-api';
 
 describe('apiFactory', () => {
   let observer;

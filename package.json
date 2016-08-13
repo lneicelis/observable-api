@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "mocha --compilers js:babel-core/register",
+    "build": "babel src --out-dir lib",
     "dev": "mocha --compilers js:babel-core/register --watch"
   },
   "repository": {
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "assert": "^1.4.1",
+    "babel-cli": "^6.11.4",
     "babel-core": "^6.13.2",
     "babel-preset-es2015": "^6.13.2",
     "mocha": "^3.0.2",
