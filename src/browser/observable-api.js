@@ -2,14 +2,6 @@
 
 import observableAPIFactory from '../observable-api';
 
-// Add support for AMD (Asynchronous Module Definition) libraries such as require.js.
-if (typeof define === 'function' && define.amd) {
-  define(['rx'], function (Rx) {
-    return {
-      ObservableAPI: observableAPIFactory(Rx)
-    };
-  });
-}
 if (typeof window !== 'undefined') {
   if (!window.Rx) {
     throw new Error('Rx library must be included before ObservableAPI!')
