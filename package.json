@@ -6,7 +6,9 @@
   "scripts": {
     "test": "mocha --compilers js:babel-core/register",
     "build": "babel src --out-dir lib",
-    "dev": "mocha --compilers js:babel-core/register --watch"
+    "dev": "mocha --compilers js:babel-core/register --watch",
+    "preversion": "npm run build && npm test",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
