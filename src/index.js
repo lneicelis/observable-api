@@ -5,13 +5,21 @@ export default function apiFactory(client) {
 
   function createEndpoint(uri, method, defaultParams, defaultData) {
     const subject = new BehaviorSubject();
-    const fetch = (params = defaultParams, data = defaultData) => {
-      return client(uri, method, params, data);
-    };
+    
     const lazyObservable = lazyObservableFactory(
       subject,
       () => fetch(defaultParams, defaultData)
     );
+
+    const createRequest = (response, params = null, data = null) => {
+      return {uri, method, params, data, response};
+    };
+
+    const fetch = (params = defaultParams, data = defaultData) => {
+      const response = client(uri, method, params, data);
+
+      return createRequest(response, params, data)
+    };
 
     const request$ = Observable
       .merge(
@@ -51,22 +59,14 @@ export function lazyObservableFactory(subject, fetch) {
 
 export function response$Factory(request$) {
   return request$
-    .flatMapLatest(req => req.catch(() => {}))
-    .filter(req => !!req);
+    .flatMapLatest(req => {
+      return req.response.catch(() => Observable.never())
+    });
 }
 
 export function error$Factory(request$) {
   return request$
-    .flatMapLatest(req => req.then(() => {}, err => err))
-    .filter(err => !!err);
-}
-
-export function createRequest(uri, method, params, data, response) {
-  return {
-    uri,
-    method,
-    params,
-    data,
-    response
-  };
+    .flatMapLatest(req => {
+      return req.response.skipWhile(() => false).catch(err => Observable.of(err));
+    });
 }

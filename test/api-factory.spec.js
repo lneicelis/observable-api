@@ -1,9 +1,9 @@
 /* global require, describe, it, beforeEach */
 
-import Promise from 'bluebird';
+import {Observable} from 'rx';
 import assert from 'assert';
 import sinon from 'sinon';
-import apiFactory, {lazyObservableFactory} from '../src/index';
+import apiFactory, {lazyObservableFactory, error$Factory} from '../src/index';
 
 
 describe('apiFactory', () => {
@@ -36,12 +36,14 @@ describe('apiFactory', () => {
   });
 
   describe('createEndpoint', () => {
+    const URI = 'uri';
+    const METHOD = 'method';
     let client, api, endpoint;
 
     beforeEach(() => {
       client = sinon.stub();
       api = apiFactory(client);
-      endpoint = api.createEndpoint('uri', 'method');
+      endpoint = api.createEndpoint(URI, METHOD);
     });
 
     it('should have fetch method', () => {
@@ -88,14 +90,31 @@ describe('apiFactory', () => {
       )
     });
 
-    it('should receive request on subscription to request$', () => {
-      client.returns('request');
+    it('request object should contain uri, method, params, data & response', () => {
+      client.returns('response');
 
       endpoint.request$.subscribe(observer);
 
+      assertCalledWith(
+        observer.onNext,
+        [{
+          uri: URI,
+          method: METHOD,
+          params: null,
+          data: null,
+          response: 'response'
+        }]
+      );
+    });
+
+    it('should receive request on subscription to request$', () => {
+      client.returns('response');
+
+      endpoint.request$.subscribe(observer);
+      
       assert.equal(
-        observer.onNext.calledWith('request'),
-        true,
+        observer.onNext.firstCall.args[0].response,
+        'response',
         'observer did not received request after subscription'
       )
     });
@@ -109,18 +128,7 @@ describe('apiFactory', () => {
       });
     });
 
-    it('subscription to response$', done => {
-      client.returns(Promise.resolve('response'));
-
-      endpoint.response$.subscribe(res => {
-        assert.equal(res, 'response');
-        done();
-      });
-    });
-
     it('should not make new request after getting new subscription', () => {
-      client.returns('request');
-
       endpoint.request$.subscribe(() => {
       });
       endpoint.request$.subscribe(() => {
@@ -130,24 +138,22 @@ describe('apiFactory', () => {
     });
 
     it('should not make request after subscribers count 1 => 0 => 1', () => {
-      client.returns('request');
-
-      endpoint.request$.take(1).subscribe(() => {
-      });
-      endpoint.request$.subscribe(() => {
-      });
+      endpoint.request$.take(1).subscribe(() => {});
+      endpoint.request$.subscribe(() => {});
 
       assert.equal(client.callCount, 1);
     });
 
     it('should push latest value when subscribers count 0 => 1', () => {
-      client.returns('request');
+      client.returns('response');
 
-      endpoint.request$.take(1).subscribe(() => {
-      });
+      endpoint.request$.take(1).subscribe(() => {});
       endpoint.request$.subscribe(observer);
 
-      assert.equal(observer.onNext.calledWith('request'), true);
+      assert.equal(
+        observer.onNext.firstCall.args[0].response,
+        'response'
+      );
     });
 
     it('fetch should force new request', () => {
@@ -160,8 +166,8 @@ describe('apiFactory', () => {
     });
 
     it('pending response should be omitted when new request comes', done => {
-      const slowResponse = Promise.resolve('first request').delay(10);
-      const fastResponse = Promise.resolve('later request').delay(20);
+      const slowResponse = Observable.of('first request').delay(10);
+      const fastResponse = Observable.of('later request').delay(20);
 
       client.onCall(0).returns(slowResponse);
       client.onCall(1).returns(fastResponse);
@@ -180,7 +186,7 @@ describe('apiFactory', () => {
     it('error should not terminate request$', done => {
       const errorsObserver = createObserver();
 
-      client.returns(Promise.reject('error'));
+      client.returns(Observable.throw('error'));
 
       endpoint.response$.subscribe(observer);
       endpoint.error$.subscribe(errorsObserver);
@@ -190,6 +196,25 @@ describe('apiFactory', () => {
         assert.equal(errorsObserver.onNext.callCount, 1);
         done();
       }, 10);
+    });
+
+    it('should handle observable returned from a client', () => {
+      client.returns(Observable.of('res'));
+
+      endpoint.response$.subscribe(observer);
+
+      assert.equal(observer.onNext.calledWith('res'), 1);
+    });
+
+    it('prev not completed response should be disposed', done => {
+      const response = Observable.create(() => done);
+
+      client.onCall(0).returns(response);
+      client.onCall(1).returns(Observable.of('later'));
+
+      endpoint.response$.subscribe(observer);
+
+      endpoint.fetch();
     });
   });
 
@@ -212,6 +237,52 @@ describe('apiFactory', () => {
       assert.equal(observer.onCompleted.called, true);
     });
   });
+
+  describe('error$Factory', () => {
+    it('should skip next values', () => {
+      const request$ = Observable.of('request1', 'req2');
+      const error$ = error$Factory(request$);
+
+      error$.subscribe(observer);
+
+      assert.equal(observer.onNext.called, false);
+    });
+
+    it('should onNext latest errors', () => {
+      const request$ = Observable.of(
+        {response: Observable.throw('error')}
+      );
+      const error$ = error$Factory(request$);
+
+      error$.subscribe(observer);
+
+      assert.equal(observer.onNext.callCount, 1);
+
+      assertCalledWith(
+        observer.onNext,
+        ['error']
+      );
+    });
+
+    it('should not terminate on error', () => {
+      const request$ = Observable.of(
+        {response: Observable.throw('error1')},
+        {response: Observable.throw('error2')}
+      );
+      const error$ = error$Factory(request$);
+
+      error$.subscribe(observer);
+
+      assert.equal(
+        observer.onNext.callCount,
+        2,
+        'onNext was not called 2 times!'
+      );
+
+      assertCalledWith(observer.onNext, ['error1'], 0);
+      assertCalledWith(observer.onNext, ['error2'], 1);
+    });
+  });
 });
 
 function createObserver() {
@@ -220,4 +291,12 @@ function createObserver() {
     onError: sinon.spy(),
     onCompleted: sinon.spy()
   };
+}
+
+function assertCalledWith(spy, expectedArgs, callIndex = 0) {
+  assert.deepEqual(
+    spy.getCall(callIndex).args,
+    expectedArgs,
+    'Observer first call was with wrong params!'
+  );
 }
