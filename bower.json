@@ -1,0 +1,25 @@
+{
+  "name": "observable-api",
+  "description": "API client based on Observables",
+  "main": "lib/dist/lib.js",
+  "authors": [
+    "Lukas Neicelis"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "RxJS",
+    "observable",
+    "API",
+    "http",
+    "client"
+  ],
+  "homepage": "https://github.com/luknei/observable-api",
+  "moduleType": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
