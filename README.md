@@ -80,3 +80,45 @@ usersEndpoint.fetch();
 usersEndpoint.fetch(params, data); // returns usersEndpoint instance
 
 ```
+
+### Combining the data
+[example in jsbin.com](https://jsbin.com/xasiduf/edit?html,js,console)
+
+```js
+
+// Using jQuery.ajax for making XHR requests
+const adapter = ObservableAPI.jQueryAdapter(jQuery);
+const api = ObservableAPI.create(adapter)
+// Fake data base url
+const baseURL = 'https://jsonplaceholder.typicode.com';
+
+// Creating endpoints
+const postsEndpoint = api.createEndpoint(`${baseURL}/posts`, 'GET');
+const posts$ = postsEndpoint.response$;
+
+const usersEndpoint = api.createEndpoint(`${baseURL}/users`, 'GET');
+const users$ = usersEndpoint.response$;
+
+// Creating custom data selectors
+const usersById$ = users$.scan((byId, users) => {
+  users.forEach(user => byId[user.id] = user);
+  
+  return byId;
+}, {});
+
+const postsWithUsers$ = Rx.Observable.combineLatest(
+  usersById$,
+  posts$,
+  (usersById, posts) => {
+    return posts.map(post => Object.assign({}, post, {
+      user: usersById[post.userId]
+    }));
+  }
+);
+
+// Printing the result
+postsWithUsers$.subscribe(posts => {
+  console.log(posts[0]);
+});
+
+```
