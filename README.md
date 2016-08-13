@@ -32,7 +32,7 @@ $ bower install observable-api
 
 ## Example
 
-Creating api
+### Creating API
 
 ```js
 
@@ -41,9 +41,27 @@ import {createAPI, jQueryAdapter} from 'observable-api';
 const adapter = jQueryAdapter(jQuery);
 const API = createAPI(adapter);
 
+```
+
+### Creating API endpoint
+
+```js
+
 const usersEndpoint = API.createEndpoint('/users', 'GET');
 
+```
+
+### Selecting data from endpoint
+
+```js
+
 const users$ = usersEndpoint.response$.map(res => res.data);
+
+```
+
+### Making requests and using the data
+
+```js
 
 // Request to the endpoint is made on the first subscription
 users$.subscribe(users => {
