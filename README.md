@@ -122,7 +122,7 @@ postsWithUsers$.subscribe(posts => {
 
 ```
 
-### Use latest results with ease [jsbin](https://jsbin.com/kelusu/edit?html,js,output)
+### Use latest results & fetching/loading indication [jsbin](https://jsbin.com/qugokav/edit?html,js,output)
 
 ```js
 
@@ -147,6 +147,14 @@ const term$ = Rx.Observable
   .debounce(250)
   .filter(term => term.length > 2)
   .do(search);
+
+searchEndpoint.fetching$
+  .subscribe(fetching => {
+    if (fetching)
+      $('#search-results').css({opacity: 0.3});
+    else
+      $('#search-results').css({opacity: 1});
+  });
 
 term$
   .flatMap(() => searchResuls$)
