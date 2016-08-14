@@ -42,5 +42,5 @@
           √ receives bool onNext
 
 
-  25 passing (300ms)
+  25 passing (266ms)
 
