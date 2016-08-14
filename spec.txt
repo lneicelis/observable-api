@@ -30,17 +30,17 @@
         observer
           √ invokes request if it's first
           √ receives response onNext
-          √ receives only latest request response (38ms)
+          √ receives only latest request response
           √ does not receive errors
       error$
         observer
-          √ invokes request if it's first
+          √ does not invoke new request
           √ receives error onNext
       fetching$
         observer
-          √ invokes request if it's first
+          √ does not invoke request
           √ receives bool onNext
 
 
-  25 passing (266ms)
+  25 passing (223ms)
 

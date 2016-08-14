@@ -183,8 +183,8 @@ describe('API', () => {
 
         client.returns(Observable.throw('error'));
 
-        endpoint.response$.subscribe(observer);
         endpoint.error$.subscribe(errorsObserver);
+        endpoint.response$.subscribe(observer);
 
         setTimeout(() => {
           assert.equal(observer.onError.callCount, 0);
@@ -273,11 +273,11 @@ describe('API', () => {
 
       describe('observer', () => {
 
-        it('invokes request if it\'s first', () => {
+        it('does not invoke new request', () => {
           endpoint.error$.subscribe(observer);
 
           assert(
-            client.called
+            !client.called
           );
         });
 
@@ -285,6 +285,8 @@ describe('API', () => {
           client.returns(Observable.throw('error'));
 
           endpoint.error$.subscribe(observer);
+
+          endpoint.fetch();
 
           assertCalledWith(
             observer.onNext,
@@ -300,11 +302,11 @@ describe('API', () => {
 
       describe('observer', () => {
 
-        it('invokes request if it\'s first', () => {
+        it('does not invoke request', () => {
           endpoint.fetching$.subscribe(observer);
 
           assert(
-            client.called
+            !client.called
           );
         });
 
@@ -312,6 +314,8 @@ describe('API', () => {
           client.returns(Observable.of('response'));
 
           endpoint.fetching$.subscribe(observer);
+
+          endpoint.fetch();
 
           assertCalledWith(
             observer.onNext,

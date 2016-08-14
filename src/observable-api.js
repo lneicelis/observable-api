@@ -47,11 +47,12 @@ export function fetching$Factory(Observable, request$) {
 function endpointFactory(Observable, BehaviorSubject, apiRequest$, client) {
   return function createEndpoint(urlFactory, method = 'GET', defaultParams, defaultData) {
     const uri = typeof urlFactory === 'string' ? () => urlFactory : urlFactory;
-    const subject = new BehaviorSubject();
+    const behaviorSubject = new BehaviorSubject();
+    const hotRequest$ = behaviorSubject.skip(1);
 
-    const lazyObservable = lazyObservableFactory(
+    const coldRequest$ = lazyObservableFactory(
       Observable,
-      subject,
+      behaviorSubject,
       () => fetch(defaultParams, defaultData)
     );
 
@@ -71,25 +72,22 @@ function endpointFactory(Observable, BehaviorSubject, apiRequest$, client) {
 
     const request$ = Observable
       .merge(
-        // Skipping initial value of behavior subject
-        subject.skip(1),
-        // subscribing to lazy observable when subscriptions goes 0 to 1
-        lazyObservable
+        hotRequest$,
+        coldRequest$
       )
       // Pushing new request to global api request observable
       .do(apiRequest$.onNext.bind(apiRequest$));
 
     return {
       fetch(params, data) {
-        subject.onNext(fetch(params, data));
+        behaviorSubject.onNext(fetch(params, data));
 
         return this;
       },
       request$: request$,
       response$: response$Factory(Observable, request$),
-      fetching$: fetching$Factory(Observable, request$),
-      error$: error$Factory(Observable, request$)
-
+      fetching$: fetching$Factory(Observable, hotRequest$),
+      error$: error$Factory(Observable, hotRequest$)
     }
   }
 }
