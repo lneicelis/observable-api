@@ -4,15 +4,15 @@ declare module 'observable-api' {
 
     export function create(adapter): API
 
-    export function jQueryAdapter(client): (uri, method, params, data) => Observable<Request>
+    export function jQueryAdapter(client): (urlFactory, method, params, data) => Observable<Request>
 
-    export function axiosAdapter(client): (uri, method, params, data) => Observable<Request>
+    export function axiosAdapter(client): (urlFactory, method, params, data) => Observable<Request>
 
     interface Request {
-        uri: string,
+        url: string,
         method: string,
-        params: Object,
-        data: Object,
+        params?: Object,
+        data?: Object,
         response: Observable<any>
     }
 
@@ -29,12 +29,12 @@ declare module 'observable-api' {
 
         error$: Observable<Error>
 
-        fetch(params: Object, data: Object): Endpoint
+        fetch(params?: Object, data?: Object): Endpoint
     }
 
     interface API {
         request$: Observable<Request>
 
-        createEndpoint(uri: string, method: string, defaultParams: Object, defaultData: Object): Endpoint
+        createEndpoint(uri: string, method: string, defaultParams?: Object, defaultData?: Object): Endpoint
     }
 }

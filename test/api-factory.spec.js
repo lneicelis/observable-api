@@ -93,10 +93,30 @@ describe('apiFactory', () => {
       assertCalledWith(
         observer.onNext,
         [{
-          uri: URI,
+          url: URI,
           method: METHOD,
-          params: null,
-          data: null,
+          params: undefined,
+          data: undefined,
+          response: 'response'
+        }]
+      );
+    });
+
+    it('urlFactory should return url string', () => {
+      const urlFactory = (params, data) => params + data;
+
+      endpoint = api.createEndpoint(urlFactory, METHOD, 'params', 'data');
+      client.returns('response');
+
+      endpoint.request$.subscribe(observer);
+
+      assertCalledWith(
+        observer.onNext,
+        [{
+          url: 'paramsdata',
+          method: METHOD,
+          params: 'params',
+          data: 'data',
           response: 'response'
         }]
       );

@@ -34,7 +34,8 @@ export function error$Factory(Observable, request$) {
 }
 
 function endpointFactory(Observable, BehaviorSubject, apiRequest$, client) {
-  return function createEndpoint(uri, method, defaultParams, defaultData) {
+  return function createEndpoint(urlFactory, method, defaultParams, defaultData) {
+    const uri = typeof urlFactory === 'string' ? () => urlFactory : urlFactory;
     const subject = new BehaviorSubject();
 
     const lazyObservable = lazyObservableFactory(
@@ -43,12 +44,16 @@ function endpointFactory(Observable, BehaviorSubject, apiRequest$, client) {
       () => fetch(defaultParams, defaultData)
     );
 
-    const createRequest = (response, params = null, data = null) => {
-      return {uri, method, params, data, response};
+    const createRequest = (response, params, data) => {
+      const url = uri(params, data);
+
+      return {url, method, params, data, response};
     };
 
     const fetch = (params = defaultParams, data = defaultData) => {
-      const response = client(uri, method, params, data);
+      const url = uri(params, data);
+
+      const response = client(url, method, params, data);
 
       return createRequest(response, params, data)
     };
