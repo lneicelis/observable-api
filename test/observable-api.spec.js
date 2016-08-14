@@ -4,8 +4,7 @@ import {Observable} from 'rx';
 import assert from 'assert';
 import sinon from 'sinon';
 import {createObserver, assertCalledWith} from './utils';
-import apiFactory from '../src/index';
-import {lazyObservableFactory, error$Factory, fetching$Factory} from '../src/observable-api';
+import {createAPI} from '../src/index';
 
 describe('API', () => {
   let observer, client, api;
@@ -13,7 +12,7 @@ describe('API', () => {
   beforeEach(() => {
     observer = createObserver();
     client = sinon.stub();
-    api = apiFactory(client);
+    api = createAPI(client);
   });
 
   it('has property request$: Observable', () => {
@@ -270,6 +269,33 @@ describe('API', () => {
       });
     });
 
+    describe('error$', () => {
+
+      describe('observer', () => {
+
+        it('invokes request if it\'s first', () => {
+          endpoint.error$.subscribe(observer);
+
+          assert(
+            client.called
+          );
+        });
+
+        it('receives error onNext', () => {
+          client.returns(Observable.throw('error'));
+
+          endpoint.error$.subscribe(observer);
+
+          assertCalledWith(
+            observer.onNext,
+            ['error']
+          );
+        });
+
+      });
+
+    });
+
     describe('fetching$', () => {
 
       describe('observer', () => {
@@ -292,180 +318,9 @@ describe('API', () => {
             [true]
           );
         });
-      });
-    });
-  });
 
-  describe('private methods', () => {
+      })
 
-    describe('lazyObservableFactory', () => {
-
-      it('should call fetch if there was no request before', () => {
-        const behaviorSubject = {
-          value: undefined,
-          onNext: sinon.spy()
-        };
-        const fetch = sinon.stub().returns('req');
-        const observable = lazyObservableFactory(Observable, behaviorSubject, fetch);
-
-        observable.subscribe(observer);
-
-        assert.equal(fetch.called, true);
-        assert.equal(behaviorSubject.onNext.calledWith('req'), true);
-
-        assert.equal(observer.onNext.called, false);
-        assert.equal(observer.onError.called, false);
-        assert.equal(observer.onCompleted.called, true);
-      });
-
-    });
-
-    describe('error$Factory', () => {
-
-      it('should skip next values', () => {
-        const request$ = Observable.of('request1', 'req2');
-        const error$ = error$Factory(Observable, request$);
-
-        error$.subscribe(observer);
-
-        assert.equal(observer.onNext.called, false);
-      });
-
-      it('should onNext latest errors', () => {
-        const request$ = Observable.of(
-          {response: Observable.throw('error')}
-        );
-        const error$ = error$Factory(Observable, request$);
-
-        error$.subscribe(observer);
-
-        assert.equal(observer.onNext.callCount, 1);
-
-        assertCalledWith(
-          observer.onNext,
-          ['error']
-        );
-      });
-
-      it('should not terminate on error', () => {
-        const request$ = Observable.of(
-          {response: Observable.throw('error1')},
-          {response: Observable.throw('error2')}
-        );
-        const error$ = error$Factory(Observable, request$);
-
-        error$.subscribe(observer);
-
-        assert.equal(
-          observer.onNext.callCount,
-          2,
-          'onNext was not called 2 times!'
-        );
-
-        assertCalledWith(observer.onNext, ['error1'], 0);
-        assertCalledWith(observer.onNext, ['error2'], 1);
-      });
-    });
-
-    describe('error$Factory', () => {
-
-      it('should skip next values', () => {
-        const request$ = Observable.of('request1', 'req2');
-        const error$ = error$Factory(Observable, request$);
-
-        error$.subscribe(observer);
-
-        assert.equal(observer.onNext.called, false);
-      });
-
-      it('should onNext latest errors', () => {
-        const request$ = Observable.of(
-          {response: Observable.throw('error')}
-        );
-        const error$ = error$Factory(Observable, request$);
-
-        error$.subscribe(observer);
-
-        assert.equal(observer.onNext.callCount, 1);
-
-        assertCalledWith(
-          observer.onNext,
-          ['error']
-        );
-      });
-
-      it('should not terminate on error', () => {
-        const request$ = Observable.of(
-          {response: Observable.throw('error1')},
-          {response: Observable.throw('error2')}
-        );
-        const error$ = error$Factory(Observable, request$);
-
-        error$.subscribe(observer);
-
-        assert.equal(
-          observer.onNext.callCount,
-          2,
-          'onNext was not called 2 times!'
-        );
-
-        assertCalledWith(observer.onNext, ['error1'], 0);
-        assertCalledWith(observer.onNext, ['error2'], 1);
-      });
-    });
-
-
-    describe('fetching$Factory', () => {
-
-      it('Should return true when new request is received', () => {
-        const response = Observable.never();
-        const request$ = Observable.of({response});
-
-        const fetching$ = fetching$Factory(Observable, request$);
-
-        fetching$.subscribe(observer);
-
-        assert.equal(observer.onNext.calledWith(true), true);
-        assert.equal(observer.onCompleted.called, false);
-        assert.equal(observer.onError.called, false);
-      });
-
-      it('Should return false when request response is OK', () => {
-        const response = Observable.of('response');
-        const request$ = Observable.of({response});
-
-        const fetching$ = fetching$Factory(Observable, request$);
-
-        fetching$.subscribe(observer);
-
-        assert.equal(observer.onNext.getCall(0).calledWith(true), true);
-        assert.equal(observer.onNext.getCall(1).calledWith(false), true);
-      });
-
-      it('Should return false when response is error', () => {
-        const response = Observable.throw('error');
-        const request$ = Observable.of({response});
-
-        const fetching$ = fetching$Factory(Observable, request$);
-
-        fetching$.subscribe(observer);
-
-        assert.equal(observer.onNext.getCall(0).calledWith(true), true);
-        assert.equal(observer.onNext.getCall(1).calledWith(false), true);
-      });
-
-      it('should onNext only when status changed', () => {
-        const request$ = Observable.of(
-          {response: Observable.never()},
-          {response: Observable.of('response')}
-        );
-
-        const fetching$ = fetching$Factory(Observable, request$);
-
-        fetching$.subscribe(observer);
-
-        assert.equal(observer.onNext.callCount, 2);
-      });
     });
 
   });

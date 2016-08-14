@@ -5,8 +5,6 @@ import axiosAdapterFactory from './adapters/axios';
 
 const createObservableAPI = observableAPIFactory(Rx);
 
-export default createObservableAPI;
-
 export const createAPI = createObservableAPI;
 
 export const jQueryAdapter = jQueryAdapterFactory(Rx.Observable);

@@ -5,8 +5,9 @@
   "main": "lib/index.js",
   "scripts": {
     "test": "mocha --compilers js:babel-core/register test/**/*.spec.js",
-    "build": "babel src --out-dir lib && webpack",
+    "build": "babel src --out-dir lib && webpack && npm run update-spec",
     "dev": "mocha --compilers js:babel-core/register --watch test/**/*.spec.js",
+    "update-spec": "mocha --compilers js:babel-core/register test/observable-api.spec.js > spec.md",
     "preversion": "npm run build && npm test",
     "postversion": "git push && git push --tags"
   },
