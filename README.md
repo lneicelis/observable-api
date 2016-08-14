@@ -81,8 +81,7 @@ usersEndpoint.fetch(params, data); // returns usersEndpoint instance
 
 ```
 
-### Combining the data
-[example in jsbin.com](https://jsbin.com/xasiduf/edit?html,js,console)
+### Combining the data [jsbin](https://jsbin.com/xasiduf/edit?html,js,console)
 
 ```js
 
@@ -122,4 +121,50 @@ postsWithUsers$.subscribe(posts => {
 });
 
 ```
+
+### Use latest results with ease [jsbin](https://jsbin.com/kelusu/edit?html,js,output)
+
+```js
+
+// Using jQuery.ajax for making XHR requests
+const adapter = ObservableAPI.jQueryAdapter(jQuery, {
+  dataType: 'jsonp',
+  jsonp: 'callback'
+});
+const api = ObservableAPI.create(adapter);
+
+// creating endpoint
+const endpointURL = ({term}) => `https://en.wikipedia.org/w/api.php?action=opensearch&search=${term}&limit=3`;
+
+// Creating endpoints
+const searchEndpoint = api.createEndpoint(endpointURL, 'POST');
+const searchResuls$ = searchEndpoint.response$;
+const search = term => searchEndpoint.fetch({term});
+
+const term$ = Rx.Observable
+  .fromEvent(document.querySelector('#search-input'), 'keyup')
+  .map(event => event.target.value)
+  .debounce(250)
+  .filter(term => term.length > 2)
+  .do(search);
+
+term$
+  .flatMap(() => searchResuls$)
+  .subscribe(displayResults);
+  
+function displayResults([term, suggestions, descriptions, links]) {
+	const $results = $('#search-results').empty();
+
+  $nodes = Rx.Observable
+  	.zip(
+      Rx.Observable.from(suggestions),
+      Rx.Observable.from(descriptions),
+      Rx.Observable.from(links),
+      (sugg, desc, link) => $(`<ul><a href="${link}">${sugg}</a><p>${desc}</p></ul>`)
+  	)
+    .subscribe($node => $results.append($node))
+}
+
+```
+
 ## [API reference](https://github.com/luknei/observable-api/blob/master/typescript/observable-api.d.ts)
