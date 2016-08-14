@@ -29,6 +29,8 @@ declare module 'observable-api' {
 
         error$: Observable<Error>
 
+        fetching$: Observable<boolean>
+
         fetch(params?: Object, data?: Object): Endpoint
     }
 

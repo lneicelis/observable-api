@@ -33,8 +33,19 @@ export function error$Factory(Observable, request$) {
     });
 }
 
+export function fetching$Factory(Observable, request$) {
+  return request$
+    .flatMapLatest(req => {
+      return req.response
+        .catch(() => Observable.of(false))
+        .map(() => false)
+        .startWith(true);
+    })
+    .distinctUntilChanged();
+}
+
 function endpointFactory(Observable, BehaviorSubject, apiRequest$, client) {
-  return function createEndpoint(urlFactory, method, defaultParams, defaultData) {
+  return function createEndpoint(urlFactory, method = 'GET', defaultParams, defaultData) {
     const uri = typeof urlFactory === 'string' ? () => urlFactory : urlFactory;
     const subject = new BehaviorSubject();
 
@@ -76,6 +87,7 @@ function endpointFactory(Observable, BehaviorSubject, apiRequest$, client) {
       },
       request$: request$,
       response$: response$Factory(Observable, request$),
+      fetching$: fetching$Factory(Observable, request$),
       error$: error$Factory(Observable, request$)
 
     }
