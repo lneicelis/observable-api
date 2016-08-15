@@ -6,17 +6,10 @@ export default function factory(Rx) {
     const createEndpoint = endpointFactory(Observable, BehaviorSubject, request$, client);
 
     return {
-      request$,
+      request$: request$.asObservable(),
       createEndpoint
     };
   };
-}
-
-export function lazyObservableFactory(Observable, subject, fetch) {
-  return Observable.create(observer => {
-    subject.onNext(subject.value || fetch());
-    observer.onCompleted();
-  });
 }
 
 export function response$Factory(Observable, request$) {
@@ -29,7 +22,7 @@ export function response$Factory(Observable, request$) {
 export function error$Factory(Observable, request$) {
   return request$
     .flatMapLatest(req => {
-      return req.response.skipWhile(() => false).catch(err => Observable.of(err));
+      return req.response.ignoreElements().catch(err => Observable.of(err));
     });
 }
 
@@ -44,17 +37,53 @@ export function fetching$Factory(Observable, request$) {
     .distinctUntilChanged();
 }
 
+function createObservableFactoryFn(Observable, hot$, behavior$, fetch) {
+
+  return (callSubscribe, includeLastValue) => {
+    const cold$ = Observable.create(observer => {
+      fetch();
+
+      observer.onCompleted();
+    });
+
+    const hotOrCold$ = () => {
+      switch (true) {
+        case callSubscribe === true:
+          return hot$.merge(cold$);
+        case callSubscribe === null && !behavior$.value:
+          return hot$.merge(cold$);
+        case callSubscribe === null && !!behavior$.value:
+          return hot$;
+        case callSubscribe === false:
+          return hot$;
+      }
+    };
+
+    const startWithLast = source$ => {
+      if (!includeLastValue || !behavior$.value) {
+        return source$;
+      }
+
+      return source$.startWith(behavior$.value);
+    };
+
+    return Observable.create(observer => {
+      observer.onNext(startWithLast(hotOrCold$()));
+    }).flatMap(observable => observable);
+  }
+}
+
 function endpointFactory(Observable, BehaviorSubject, apiRequest$, client) {
-  return function createEndpoint(urlFactory, method = 'GET', defaultParams, defaultData) {
+  const defaultOptions = {
+    defaultParams: undefined,
+    defaultData: undefined
+  };
+
+  return function createEndpoint(urlFactory, method = 'GET', options = defaultOptions) {
+    const {defaultParams, defaultData} = options;
     const uri = typeof urlFactory === 'string' ? () => urlFactory : urlFactory;
     const behaviorSubject = new BehaviorSubject();
     const hotRequest$ = behaviorSubject.skip(1);
-
-    const coldRequest$ = lazyObservableFactory(
-      Observable,
-      behaviorSubject,
-      () => fetch(defaultParams, defaultData)
-    );
 
     const createRequest = (response, params, data) => {
       const url = uri(params, data);
@@ -64,30 +93,27 @@ function endpointFactory(Observable, BehaviorSubject, apiRequest$, client) {
 
     const fetch = (params = defaultParams, data = defaultData) => {
       const url = uri(params, data);
-
       const response = client(url, method, params, data);
+      const request = createRequest(response, params, data);
+
+      apiRequest$.onNext(request);
+      behaviorSubject.onNext(request);
 
       return createRequest(response, params, data)
     };
 
-    const request$ = Observable
-      .merge(
-        hotRequest$,
-        coldRequest$
-      )
-      // Pushing new request to global api request observable
-      .do(apiRequest$.onNext.bind(apiRequest$));
+    const create$ = createObservableFactoryFn(Observable, hotRequest$, behaviorSubject, fetch);
 
     return {
       fetch(params, data) {
-        behaviorSubject.onNext(fetch(params, data));
+        fetch(params, data);
 
         return this;
       },
-      request$: request$,
-      response$: response$Factory(Observable, request$),
-      fetching$: fetching$Factory(Observable, hotRequest$),
-      error$: error$Factory(Observable, hotRequest$)
+      request$: create$(null, true),
+      response$: response$Factory(Observable, create$(null, true)),
+      fetching$: fetching$Factory(Observable, create$(false, false)),
+      error$: error$Factory(Observable, create$(false, false))
     }
   }
 }

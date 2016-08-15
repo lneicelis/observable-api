@@ -30,7 +30,7 @@
         observer
           √ invokes request if it's first
           √ receives response onNext
-          √ receives only latest request response
+          √ receives only latest request response (39ms)
           √ does not receive errors
       error$
         observer
@@ -42,5 +42,5 @@
           √ receives bool onNext
 
 
-  25 passing (223ms)
+  25 passing (276ms)
 

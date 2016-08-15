@@ -13,28 +13,6 @@ describe('Observables factories', () => {
     observer = createObserver();
   });
 
-  describe('lazyObservableFactory', () => {
-
-    it('should call fetch if there was no request before', () => {
-      const behaviorSubject = {
-        value: undefined,
-        onNext: sinon.spy()
-      };
-      const fetch = sinon.stub().returns('req');
-      const observable = lazyObservableFactory(Observable, behaviorSubject, fetch);
-
-      observable.subscribe(observer);
-
-      assert.equal(fetch.called, true);
-      assert.equal(behaviorSubject.onNext.calledWith('req'), true);
-
-      assert.equal(observer.onNext.called, false);
-      assert.equal(observer.onError.called, false);
-      assert.equal(observer.onCompleted.called, true);
-    });
-
-  });
-
   describe('error$Factory', () => {
 
     it('should skip next values', () => {

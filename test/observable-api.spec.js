@@ -65,7 +65,10 @@ describe('API', () => {
     describe('provided URI is function', () => {
       it('calls URI function with params, data', () => {
         const urlFactory = sinon.spy();
-        endpoint = api.createEndpoint(urlFactory, METHOD, 'params', 'data');
+        endpoint = api.createEndpoint(urlFactory, METHOD, {
+          defaultParams: 'params',
+          defaultData: 'data'
+        });
 
         endpoint.fetch('params', 'data');
 
@@ -77,7 +80,10 @@ describe('API', () => {
 
       it('defaultParams & defaultData is used', () => {
         const urlFactory = sinon.spy();
-        endpoint = api.createEndpoint(urlFactory, METHOD, 'params', 'data');
+        endpoint = api.createEndpoint(urlFactory, METHOD, {
+          defaultParams: 'params',
+          defaultData: 'data'
+        });
 
         endpoint.fetch();
 
@@ -105,7 +111,6 @@ describe('API', () => {
           }]
         );
       });
-
 
     });
 
@@ -169,6 +174,10 @@ describe('API', () => {
 
           endpoint.request$.take(1).subscribe(() => {});
           endpoint.request$.subscribe(observer);
+
+          assert(
+             client.callCount === 1
+          );
 
           assert.equal(
             observer.onNext.firstCall.args[0].response,
