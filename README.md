@@ -2,8 +2,34 @@
 [![GitHub version](https://img.shields.io/github/tag/luknei/observable-api.svg)](https://github.com/luknei/observable-api)
 [![NPM version](https://img.shields.io/npm/v/observable-api.svg)](https://www.npmjs.com/package/observable-api)
 
-# observable-api
+# Observable-API
 API client based on Observables (RxJS)
+
+* Stateless
+* Well tested
+* Framework agonistic
+* Can use HTTP client of your choice - axios, jQuery.ajax, request, superagent, $http or any other
+* App size performance penality free approach
+
+## Problem
+
+You can easily use observables to abstract your API yourself to take advantage of benefits observables operators offers: efortless retry on error, avoiding race conditions etc. The problem arises when multiple components needs to use the same endpoind data. In case every component of your application makes individual request to an endpoint, they end up with inconsistent data. There are few common ways keep data insync:
+* Stateless way. Push new data to the observers/subscribers directly
+  * Create Subject that receives all of the requests and share it with observers.
+  * Create pub/sub that emits events with new requests.
+* Stateful way. Notifying components when to reselect data from the state
+  * Build your own state machine. e.g.: AngularJS service that holds latest data from endpoint and notifies components about changes via $rootScope.
+  * Use state management libraries like Redux, Flux.
+
+However when choosing stateless approach you still need some sort of state management involved in order to prevent excess request to an endpoints. E.g. some components of your app may just interesing in observing changes to the status - . Some other components may want to fetch endpoint // TODO: finish
+
+## Solution
+Observable-API solves this problem in a stateless way using observables offering some nice out features of the box:
+* Every endpoint has requests, responses, errors, fetching status observables
+* First subscription to the requests/responses triggers http request to the endpoint
+* Subsequent subscriptions will receive latest request/response
+* Race conditions free
+* Observable for tracking requests to all of the endpoints
 
 ## Prerequisites
 
