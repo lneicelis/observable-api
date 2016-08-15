@@ -2,8 +2,37 @@
 [![GitHub version](https://img.shields.io/github/tag/luknei/observable-api.svg)](https://github.com/luknei/observable-api)
 [![NPM version](https://img.shields.io/npm/v/observable-api.svg)](https://www.npmjs.com/package/observable-api)
 
-# observable-api
+# Observable-API
 API client based on Observables (RxJS)
+
+* Stateless
+* Well tested
+* Framework agonistic
+* Can use HTTP client of your choice - axios, jQuery.ajax, request, superagent, $http or any other
+* App size performance penality free approach
+
+## Problem
+
+You can easily use observables to abstract your API yourself to take advantage of the benefits observables offers: efortless retry on error, avoiding race conditions, wide range of useful operators etc. The problem arises when multiple components needs to use the same endpoind data. In case every component of your application makes individual request to an endpoint, they end up with inconsistent data. There are few common ways keep data insync:
+* Stateless way. **Push** new data to the observers/subscribers directly
+  * Create Subject that receives all of the requests and share it with observers.
+  * Create pub/sub that emits events with new requests.
+* Stateful way. Notifying components when to **pull** data from the state
+  * Build your own state machine. e.g.: AngularJS service that holds latest data from endpoint and notifies components that change occured via $rootScope.
+  * Use state management libraries like Redux, Flux.
+
+However when choosing stateless approach you still need some sort of state management involved. Common ways the endpoint data is consumed:
+* Observer always wants the **new data** from the endpoint when it subscribes (new subscription will always issues new request)
+* Observer want only the **latest data** from the endpoint (observer receives latest data, if it is first subscription request will be made)
+* Component only wants to **observe data** comming from the endpoint without ever making a request (wants to observe only error if some occurs)
+
+## Solution
+Observable-API solves this problem in a stateless way using observables offering some nice out features of the box:
+* Every endpoint has requests, responses, errors, fetching status observables
+* First subscription to the requests/responses triggers http request to the endpoint
+* Subsequent subscriptions will receive latest request/response
+* Race conditions free
+* Observable for tracking requests to all of the endpoints
 
 ## Prerequisites
 
@@ -122,7 +151,7 @@ postsWithUsers$.subscribe(posts => {
 
 ```
 
-### Use latest results with ease [jsbin](https://jsbin.com/kelusu/edit?html,js,output)
+### Use latest results & fetching/loading indication [jsbin](https://jsbin.com/qugokav/edit?html,js,output)
 
 ```js
 
@@ -147,6 +176,14 @@ const term$ = Rx.Observable
   .debounce(250)
   .filter(term => term.length > 2)
   .do(search);
+
+searchEndpoint.fetching$
+  .subscribe(fetching => {
+    if (fetching)
+      $('#search-results').css({opacity: 0.3});
+    else
+      $('#search-results').css({opacity: 1});
+  });
 
 term$
   .flatMap(() => searchResuls$)
