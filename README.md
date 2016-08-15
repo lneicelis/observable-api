@@ -13,15 +13,18 @@ API client based on Observables (RxJS)
 
 ## Problem
 
-You can easily use observables to abstract your API yourself to take advantage of benefits observables operators offers: efortless retry on error, avoiding race conditions etc. The problem arises when multiple components needs to use the same endpoind data. In case every component of your application makes individual request to an endpoint, they end up with inconsistent data. There are few common ways keep data insync:
-* Stateless way. Push new data to the observers/subscribers directly
+You can easily use observables to abstract your API yourself to take advantage of the benefits observables offers: efortless retry on error, avoiding race conditions, wide range of useful operators etc. The problem arises when multiple components needs to use the same endpoind data. In case every component of your application makes individual request to an endpoint, they end up with inconsistent data. There are few common ways keep data insync:
+* Stateless way. **Push** new data to the observers/subscribers directly
   * Create Subject that receives all of the requests and share it with observers.
   * Create pub/sub that emits events with new requests.
-* Stateful way. Notifying components when to reselect data from the state
-  * Build your own state machine. e.g.: AngularJS service that holds latest data from endpoint and notifies components about changes via $rootScope.
+* Stateful way. Notifying components when to **pull** data from the state
+  * Build your own state machine. e.g.: AngularJS service that holds latest data from endpoint and notifies components that change occured via $rootScope.
   * Use state management libraries like Redux, Flux.
 
-However when choosing stateless approach you still need some sort of state management involved in order to prevent excess request to an endpoints. E.g. some components of your app may just interesing in observing changes to the status - . Some other components may want to fetch endpoint // TODO: finish
+However when choosing stateless approach you still need some sort of state management involved. Common ways the endpoint data is consumed:
+* Observer always wants the **new data** from the endpoint when it subscribes (new subscription will always issues new request)
+* Observer want only the **latest data** from the endpoint (observer receives latest data, if it is first subscription request will be made)
+* Component only wants to **observe data** comming from the endpoint without ever making a request (wants to observe only error if some occurs)
 
 ## Solution
 Observable-API solves this problem in a stateless way using observables offering some nice out features of the box:
