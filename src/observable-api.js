@@ -37,7 +37,7 @@ export function fetching$Factory(Observable, request$) {
     .distinctUntilChanged();
 }
 
-function createObservableFactoryFn(Observable, hot$, behavior$, fetch) {
+export function createObservableFactoryFn(Observable, hot$, behavior$, fetch) {
 
   return (callSubscribe, includeLastValue) => {
     const cold$ = Observable.create(observer => {
@@ -50,11 +50,11 @@ function createObservableFactoryFn(Observable, hot$, behavior$, fetch) {
       switch (true) {
         case callSubscribe === true:
           return hot$.merge(cold$);
-        case callSubscribe === null && !behavior$.value:
-          return hot$.merge(cold$);
-        case callSubscribe === null && !!behavior$.value:
-          return hot$;
         case callSubscribe === false:
+          return hot$;
+        case !behavior$.value:
+          return hot$.merge(cold$);
+        case !!behavior$.value:
           return hot$;
       }
     };

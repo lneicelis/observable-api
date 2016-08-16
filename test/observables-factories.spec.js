@@ -1,16 +1,156 @@
 /* global require, describe, it, beforeEach */
 
-import {Observable} from 'rx';
+import {Observable, Subject, BehaviorSubject} from 'rx';
 import assert from 'assert';
 import sinon from 'sinon';
 import {createObserver, assertCalledWith} from './utils';
-import {lazyObservableFactory, error$Factory, fetching$Factory} from '../src/observable-api';
+import {createObservableFactoryFn, error$Factory, fetching$Factory} from '../src/observable-api';
 
 describe('Observables factories', () => {
   let observer;
 
   beforeEach(() => {
     observer = createObserver();
+  });
+
+  describe('createObservableFactoryFn', () => {
+    let hot$, behavior$, fetch, create$;
+
+    beforeEach(() => {
+      hot$ = new Subject();
+      behavior$ = new BehaviorSubject();
+      fetch = sinon.stub();
+      create$ = createObservableFactoryFn(Observable, hot$, behavior$, fetch);
+    });
+
+    it('returns create$ function', () => {
+      assert(
+        typeof create$ === 'function'
+      );
+    });
+
+    describe('create$()', () => {
+      it('returns observable', () => {
+        assert(
+          create$() instanceof Observable
+        );
+      });
+    });
+
+    describe('create$(true).subscribe()', () => {
+      it('calls fetch()', () => {
+        create$(true).subscribe(observer);
+
+        assert(
+          fetch.called
+        );
+      });
+
+      it('is merged with hot$', () => {
+        create$(true).subscribe(observer);
+
+        hot$.onNext('val');
+
+        assert(
+          fetch.called
+        );
+      });
+    });
+
+    describe('create$().subscribe()', () => {
+      it('calls fetch() if not behavior$ does not have value', () => {
+        create$().subscribe(observer);
+
+        assert(
+          fetch.called
+        );
+      });
+
+      it('does not call fetch() if behavior$ has value', () => {
+        behavior$.onNext('val');
+
+        create$().subscribe(observer);
+
+        assert(
+          !fetch.called
+        );
+      });
+    });
+
+    describe('create$(false).subscribe()', () => {
+      it('does not call fetch() if behavior$ has value', () => {
+        create$(false).subscribe(observer);
+
+        assert(
+          !fetch.called
+        );
+      });
+
+      it('does not call fetch() if behavior$ has value', () => {
+        behavior$.onNext('val');
+
+        create$(false).subscribe(observer);
+
+        assert(
+          !fetch.called
+        );
+      });
+    });
+
+    // TODO: test case with initial value = true/false
+    describe('create$(false, true).subscribe()', () => {
+
+      describe('previous value exists', () => {
+        it('calls observer with last value', () => {
+          behavior$.onNext('prev_val');
+
+          create$(false, true).subscribe(observer);
+
+          assertCalledWith(
+            observer.onNext,
+            ['prev_val']
+          );
+        });
+      });
+
+      describe('previous value does not exist', () => {
+        it('does not call observer', () => {
+          create$(false, true).subscribe(observer);
+
+          assert(
+            !observer.onNext.called
+          );
+        });
+      });
+
+    });
+
+    describe('create$(false, false).subscribe()', () => {
+
+      describe('previous value exists', () => {
+        it('does not call observer', () => {
+          behavior$.onNext('prev_val');
+
+          create$(false, false).subscribe(observer);
+
+          assert(
+            !observer.onNext.called
+          );
+        });
+      });
+
+      describe('previous value does not exist', () => {
+        it('does not call observer', () => {
+          create$(false, false).subscribe(observer);
+
+          assert(
+            !observer.onNext.called
+          );
+        });
+      });
+
+    });
+
   });
 
   describe('error$Factory', () => {
