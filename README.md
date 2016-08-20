@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/luknei/observable-api.svg)](https://travis-ci.org/luknei/observable-api)
+[![bitHound Overall Score](https://www.bithound.io/github/luknei/observable-api/badges/score.svg)](https://www.bithound.io/github/luknei/observable-api)
 [![GitHub version](https://img.shields.io/github/tag/luknei/observable-api.svg)](https://github.com/luknei/observable-api)
 [![NPM version](https://img.shields.io/npm/v/observable-api.svg)](https://www.npmjs.com/package/observable-api)
 
