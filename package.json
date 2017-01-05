@@ -1,6 +1,6 @@
 {
   "name": "observable-api",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "API client based on Observables",
   "main": "lib/index.js",
   "scripts": {
