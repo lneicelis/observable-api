@@ -14,21 +14,21 @@ export default function factory(Rx) {
 
 export function response$Factory(Observable, request$) {
   return request$
-    .flatMapLatest(req => {
+    .switchMap(req => {
       return req.response.catch(() => Observable.never())
     });
 }
 
 export function error$Factory(Observable, request$) {
   return request$
-    .flatMapLatest(req => {
+    .switchMap(req => {
       return req.response.ignoreElements().catch(err => Observable.of(err));
     });
 }
 
 export function fetching$Factory(Observable, request$) {
   return request$
-    .flatMapLatest(req => {
+    .switchMap(req => {
       return req.response
         .catch(() => Observable.of(false))
         .map(() => false)
@@ -43,7 +43,7 @@ export function createObservableFactoryFn(Observable, hot$, behavior$, fetch) {
     const cold$ = Observable.create(observer => {
       fetch();
 
-      observer.onCompleted();
+      observer.complete();
     });
 
     const hotOrCold$ = () => {
@@ -68,7 +68,7 @@ export function createObservableFactoryFn(Observable, hot$, behavior$, fetch) {
     };
 
     return Observable.create(observer => {
-      observer.onNext(startWithLast(hotOrCold$()));
+      observer.next(startWithLast(hotOrCold$()));
     }).flatMap(observable => observable);
   }
 }
@@ -96,8 +96,8 @@ function endpointFactory(Observable, BehaviorSubject, apiRequest$, client) {
       const response = client(url, method, params, data);
       const request = createRequest(response, params, data);
 
-      apiRequest$.onNext(request);
-      behaviorSubject.onNext(request);
+      apiRequest$.next(request);
+      behaviorSubject.next(request);
 
       return createRequest(response, params, data)
     };

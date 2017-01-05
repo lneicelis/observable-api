@@ -1,6 +1,6 @@
 /* global require, describe, it, beforeEach */
 
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 import assert from 'assert';
 import sinon from 'sinon';
 import {createObserver, assertCalledWith} from '../utils';
@@ -57,8 +57,8 @@ describe('axiosAdapter', () => {
     response.subscribe(observer);
 
     setTimeout(() => {
-      assert(observer.onNext.calledWith('response'));
-      assert(observer.onCompleted.called);
+      assert(observer.next.calledWith('response'));
+      assert(observer.complete.called);
       done();
     }, 10);
   });
@@ -73,7 +73,7 @@ describe('axiosAdapter', () => {
     response.subscribe(observer);
 
     setTimeout(() => {
-      assert(observer.onError.calledWith('error'));
+      assert(observer.error.calledWith('error'));
       done();
     }, 10);
   });

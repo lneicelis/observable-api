@@ -1,6 +1,6 @@
 /* global require, describe, it, beforeEach */
 
-import {Observable} from 'rx';
+import {Observable} from '@reactivex/rxjs';
 import assert from 'assert';
 import sinon from 'sinon';
 import {createObserver, assertCalledWith} from './utils';
@@ -101,7 +101,7 @@ describe('API', () => {
         endpoint.request$.subscribe(observer);
 
         assertCalledWith(
-          observer.onNext,
+          observer.next,
           [{
             url: 'new_url',
             method: METHOD,
@@ -180,7 +180,7 @@ describe('API', () => {
           );
 
           assert.equal(
-            observer.onNext.firstCall.args[0].response,
+            observer.next.firstCall.args[0].response,
             'response'
           );
         });
@@ -196,8 +196,8 @@ describe('API', () => {
         endpoint.response$.subscribe(observer);
 
         setTimeout(() => {
-          assert.equal(observer.onError.callCount, 0);
-          assert.equal(errorsObserver.onNext.callCount, 1);
+          assert.equal(observer.error.callCount, 0);
+          assert.equal(errorsObserver.next.callCount, 1);
           done();
         }, 10);
       });
@@ -210,7 +210,7 @@ describe('API', () => {
           endpoint.request$.subscribe(observer);
 
           assertCalledWith(
-            observer.onNext,
+            observer.next,
             [{
               url: URI,
               method: METHOD,
@@ -243,7 +243,7 @@ describe('API', () => {
           endpoint.response$.subscribe(observer);
 
           assertCalledWith(
-            observer.onNext,
+            observer.next,
             ['response']
           );
         });
@@ -260,8 +260,8 @@ describe('API', () => {
           endpoint.fetch();
 
           setTimeout(() => {
-            assert.equal(observer.onNext.callCount, 1);
-            assert.equal(observer.onNext.calledWith('later request'), true);
+            assert.equal(observer.next.callCount, 1);
+            assert.equal(observer.next.calledWith('later request'), true);
             done();
           }, 30);
         });
@@ -272,7 +272,7 @@ describe('API', () => {
           endpoint.response$.subscribe(observer);
 
           assert(
-            !observer.onNext.called
+            !observer.next.called
           );
         });
       });
@@ -298,7 +298,7 @@ describe('API', () => {
           endpoint.fetch();
 
           assertCalledWith(
-            observer.onNext,
+            observer.next,
             ['error']
           );
         });
@@ -327,7 +327,7 @@ describe('API', () => {
           endpoint.fetch();
 
           assertCalledWith(
-            observer.onNext,
+            observer.next,
             [true]
           );
         });

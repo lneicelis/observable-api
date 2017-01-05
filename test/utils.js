@@ -3,9 +3,9 @@ import sinon from 'sinon';
 
 export function createObserver() {
   return {
-    onNext: sinon.spy(),
-    onError: sinon.spy(),
-    onCompleted: sinon.spy()
+    next: sinon.spy(),
+    error: sinon.spy(),
+    complete: sinon.spy()
   };
 }
 

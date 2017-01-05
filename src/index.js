@@ -1,4 +1,4 @@
-import Rx from 'rx';
+import Rx from '@reactivex/rxjs';
 import observableAPIFactory from './observable-api';
 import jQueryAdapterFactory from './adapters/jquery';
 import axiosAdapterFactory from './adapters/axios';

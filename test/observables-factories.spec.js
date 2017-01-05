@@ -1,6 +1,6 @@
 /* global require, describe, it, beforeEach */
 
-import {Observable, Subject, BehaviorSubject} from 'rx';
+import {Observable, Subject, BehaviorSubject} from '@reactivex/rxjs';
 import assert from 'assert';
 import sinon from 'sinon';
 import {createObserver, assertCalledWith} from './utils';
@@ -49,7 +49,7 @@ describe('Observables factories', () => {
       it('is merged with hot$', () => {
         create$(true).subscribe(observer);
 
-        hot$.onNext('val');
+        hot$.next('val');
 
         assert(
           fetch.called
@@ -67,7 +67,7 @@ describe('Observables factories', () => {
       });
 
       it('does not call fetch() if behavior$ has value', () => {
-        behavior$.onNext('val');
+        behavior$.next('val');
 
         create$().subscribe(observer);
 
@@ -87,7 +87,7 @@ describe('Observables factories', () => {
       });
 
       it('does not call fetch() if behavior$ has value', () => {
-        behavior$.onNext('val');
+        behavior$.next('val');
 
         create$(false).subscribe(observer);
 
@@ -102,12 +102,12 @@ describe('Observables factories', () => {
 
       describe('previous value exists', () => {
         it('calls observer with last value', () => {
-          behavior$.onNext('prev_val');
+          behavior$.next('prev_val');
 
           create$(false, true).subscribe(observer);
 
           assertCalledWith(
-            observer.onNext,
+            observer.next,
             ['prev_val']
           );
         });
@@ -118,7 +118,7 @@ describe('Observables factories', () => {
           create$(false, true).subscribe(observer);
 
           assert(
-            !observer.onNext.called
+            !observer.next.called
           );
         });
       });
@@ -129,12 +129,12 @@ describe('Observables factories', () => {
 
       describe('previous value exists', () => {
         it('does not call observer', () => {
-          behavior$.onNext('prev_val');
+          behavior$.next('prev_val');
 
           create$(false, false).subscribe(observer);
 
           assert(
-            !observer.onNext.called
+            !observer.next.called
           );
         });
       });
@@ -144,7 +144,7 @@ describe('Observables factories', () => {
           create$(false, false).subscribe(observer);
 
           assert(
-            !observer.onNext.called
+            !observer.next.called
           );
         });
       });
@@ -161,7 +161,7 @@ describe('Observables factories', () => {
 
       error$.subscribe(observer);
 
-      assert.equal(observer.onNext.called, false);
+      assert.equal(observer.next.called, false);
     });
 
     it('should onNext latest errors', () => {
@@ -172,10 +172,10 @@ describe('Observables factories', () => {
 
       error$.subscribe(observer);
 
-      assert.equal(observer.onNext.callCount, 1);
+      assert.equal(observer.next.callCount, 1);
 
       assertCalledWith(
-        observer.onNext,
+        observer.next,
         ['error']
       );
     });
@@ -190,13 +190,13 @@ describe('Observables factories', () => {
       error$.subscribe(observer);
 
       assert.equal(
-        observer.onNext.callCount,
+        observer.next.callCount,
         2,
         'onNext was not called 2 times!'
       );
 
-      assertCalledWith(observer.onNext, ['error1'], 0);
-      assertCalledWith(observer.onNext, ['error2'], 1);
+      assertCalledWith(observer.next, ['error1'], 0);
+      assertCalledWith(observer.next, ['error2'], 1);
     });
   });
 
@@ -208,7 +208,7 @@ describe('Observables factories', () => {
 
       error$.subscribe(observer);
 
-      assert.equal(observer.onNext.called, false);
+      assert.equal(observer.next.called, false);
     });
 
     it('should onNext latest errors', () => {
@@ -219,10 +219,10 @@ describe('Observables factories', () => {
 
       error$.subscribe(observer);
 
-      assert.equal(observer.onNext.callCount, 1);
+      assert.equal(observer.next.callCount, 1);
 
       assertCalledWith(
-        observer.onNext,
+        observer.next,
         ['error']
       );
     });
@@ -237,13 +237,13 @@ describe('Observables factories', () => {
       error$.subscribe(observer);
 
       assert.equal(
-        observer.onNext.callCount,
+        observer.next.callCount,
         2,
         'onNext was not called 2 times!'
       );
 
-      assertCalledWith(observer.onNext, ['error1'], 0);
-      assertCalledWith(observer.onNext, ['error2'], 1);
+      assertCalledWith(observer.next, ['error1'], 0);
+      assertCalledWith(observer.next, ['error2'], 1);
     });
   });
 
@@ -258,9 +258,9 @@ describe('Observables factories', () => {
 
       fetching$.subscribe(observer);
 
-      assert.equal(observer.onNext.calledWith(true), true);
-      assert.equal(observer.onCompleted.called, false);
-      assert.equal(observer.onError.called, false);
+      assert.equal(observer.next.calledWith(true), true);
+      assert.equal(observer.complete.called, false);
+      assert.equal(observer.error.called, false);
     });
 
     it('Should return false when request response is OK', () => {
@@ -271,8 +271,8 @@ describe('Observables factories', () => {
 
       fetching$.subscribe(observer);
 
-      assert.equal(observer.onNext.getCall(0).calledWith(true), true);
-      assert.equal(observer.onNext.getCall(1).calledWith(false), true);
+      assert.equal(observer.next.getCall(0).calledWith(true), true);
+      assert.equal(observer.next.getCall(1).calledWith(false), true);
     });
 
     it('Should return false when response is error', () => {
@@ -283,8 +283,8 @@ describe('Observables factories', () => {
 
       fetching$.subscribe(observer);
 
-      assert.equal(observer.onNext.getCall(0).calledWith(true), true);
-      assert.equal(observer.onNext.getCall(1).calledWith(false), true);
+      assert.equal(observer.next.getCall(0).calledWith(true), true);
+      assert.equal(observer.next.getCall(1).calledWith(false), true);
     });
 
     it('should onNext only when status changed', () => {
@@ -297,7 +297,7 @@ describe('Observables factories', () => {
 
       fetching$.subscribe(observer);
 
-      assert.equal(observer.onNext.callCount, 2);
+      assert.equal(observer.next.callCount, 2);
     });
   });
 
