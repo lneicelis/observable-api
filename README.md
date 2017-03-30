@@ -45,7 +45,7 @@ Observable-API solves this problem in a stateless way using observables offering
 Using cdn:
 
 ```html
-<script src="https://npmcdn.com/observable-api/lib/dist/observable-api.js"></script>
+<script src="https://unpkg.com/observable-api/lib/dist/observable-api.js"></script>
 ```
 
 Using npm:
